@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notable Completions — BoatLabs GP Tracker</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="bracket">[</span>BOATLABS GP<span class="bracket">]</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="grands-prix.html">Grands Prix</a>
+      <a href="tracks.html">Tracks</a>
+      <a href="drivers.html">Drivers</a>
+      <a href="notable-completions.html" class="active">Notable Runs</a>
+    </nav>
+    <a class="nav-cta" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Join Discord</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <div class="page-eyebrow">// Sub-20:00 finishes</div>
+      <h1>Notable completions</h1>
+      <p>Every grand prix won in under 20 minutes flat, fastest first.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="controls">
+        <span class="result-count" id="result-count"></span>
+      </div>
+
+      <div class="data-table" id="notable-table"></div>
+      <div class="pagination" id="notable-pagination"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="footer-note">Fan-built tracker for the BoatLabs ice boat racing server. Not an official BoatLabs product. Data shown is sample data until wired up to a live source.</p>
+    <div class="footer-links">
+      <a href="https://boatlabs.net" target="_blank" rel="noopener">boatlabs.net</a>
+      <a href="https://discord.boatlabs.net" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const allGps = await loadGrandsPrix();
+  const notable = allGps
+    .filter(g => g.winTimeSeconds < 1200)
+    .sort((a, b) => a.winTimeSeconds - b.winTimeSeconds);
+
+  const tableEl = document.getElementById('notable-table');
+  const paginationEl = document.getElementById('notable-pagination');
+  const countEl = document.getElementById('result-count');
+
+  const headerHtml = `
+    <div class="tr head" style="grid-template-columns: 36px 1fr 1.2fr 1fr 0.9fr;">
+      <div>#</div><div>DRIVER</div><div>GRAND PRIX</div><div>TRACK</div><div>TIME</div>
+    </div>`;
+
+  function renderRow(g, rank) {
+    return `
+      <div class="tr body" style="grid-template-columns: 36px 1fr 1.2fr 1fr 0.9fr;">
+        <div style="color:var(--muted);">${rank}</div>
+        <div class="driver-cell">
+          <img src="${skinUrl(g.winnerUuid, 20)}" alt="" loading="lazy">
+          <a href="driver.html?name=${slugify(g.winner)}" style="text-decoration:none;">${g.winner}</a>
+        </div>
+        <div>${g.league} — S${g.season} R${g.round}</div>
+        <div>${g.track}</div>
+        <div class="mono-num">${formatTime(g.winTimeSeconds)}</div>
+      </div>`;
+  }
+
+  notable.forEach((g, i) => { g._rank = i + 1; });
+
+  createPaginator({
+    items: notable,
+    pageSize: 15,
+    tableEl,
+    paginationEl,
+    headerHtml,
+    renderRow: (g) => renderRow(g, g._rank),
+    countEl
+  });
+})();
+</script>
+</body>
+</html>

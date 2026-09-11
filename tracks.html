@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracks — BoatLabs GP Tracker</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="bracket">[</span>BOATLABS GP<span class="bracket">]</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="grands-prix.html">Grands Prix</a>
+      <a href="tracks.html" class="active">Tracks</a>
+      <a href="drivers.html">Drivers</a>
+      <a href="notable-completions.html">Notable Runs</a>
+    </nav>
+    <a class="nav-cta" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Join Discord</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <div class="page-eyebrow">// Track index</div>
+      <h1>Every track that's hosted a GP</h1>
+      <p>Ranked by how often each one's been raced. Click through to see its full grand prix history.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="controls">
+        <div class="search-box">
+          <input type="text" id="track-search" placeholder="Search tracks…" autocomplete="off">
+        </div>
+        <span class="result-count" id="result-count"></span>
+      </div>
+
+      <div class="data-table" id="track-table"></div>
+      <div class="pagination" id="track-pagination"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="footer-note">Fan-built tracker for the BoatLabs ice boat racing server. Not an official BoatLabs product. Data shown is sample data until wired up to a live source.</p>
+    <div class="footer-links">
+      <a href="https://boatlabs.net" target="_blank" rel="noopener">boatlabs.net</a>
+      <a href="https://discord.boatlabs.net" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const allTracks = await loadTracks();
+
+  const tableEl = document.getElementById('track-table');
+  const paginationEl = document.getElementById('track-pagination');
+  const countEl = document.getElementById('result-count');
+  const searchInput = document.getElementById('track-search');
+
+  const headerHtml = `
+    <div class="tr head" style="grid-template-columns: 1.6fr 0.9fr 0.9fr 1fr;">
+      <div>TRACK</div><div>DIFFICULTY</div><div>GPS HOSTED</div><div>LAST RACED</div>
+    </div>`;
+
+  function renderRow(t) {
+    return `
+      <a class="tr body link" href="grands-prix.html?track=${slugify(t.name)}"
+         style="grid-template-columns: 1.6fr 0.9fr 0.9fr 1fr;">
+        <div>${t.name}</div>
+        <div>${difficultyTag(t.difficulty)}</div>
+        <div class="mono-num">${t.gpCount}</div>
+        <div>${formatDate(t.lastUsed)}</div>
+      </a>`;
+  }
+
+  const paginator = createPaginator({
+    items: allTracks,
+    pageSize: 15,
+    tableEl,
+    paginationEl,
+    headerHtml,
+    renderRow,
+    countEl
+  });
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = q ? allTracks.filter(t => t.name.toLowerCase().includes(q)) : allTracks;
+    paginator.setItems(filtered);
+  });
+})();
+</script>
+</body>
+</html>

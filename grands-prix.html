@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grands Prix — BoatLabs GP Tracker</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="bracket">[</span>BOATLABS GP<span class="bracket">]</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="grands-prix.html" class="active">Grands Prix</a>
+      <a href="tracks.html">Tracks</a>
+      <a href="drivers.html">Drivers</a>
+      <a href="notable-completions.html">Notable Runs</a>
+    </nav>
+    <a class="nav-cta" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Join Discord</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <div class="page-eyebrow">// Full race log</div>
+      <h1 id="page-title">Every grand prix</h1>
+      <p id="page-sub">Every recorded grand prix across every BoatLabs league, most recent first.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="controls">
+        <span class="result-count" id="result-count"></span>
+        <button class="btn-secondary" id="clear-filter" style="display:none; padding: 8px 14px; font-size: 12px;">Clear track filter ×</button>
+      </div>
+
+      <div class="data-table" id="gp-table"></div>
+      <div class="pagination" id="gp-pagination"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="footer-note">Fan-built tracker for the BoatLabs ice boat racing server. Not an official BoatLabs product. Data shown is sample data until wired up to a live source.</p>
+    <div class="footer-links">
+      <a href="https://boatlabs.net" target="_blank" rel="noopener">boatlabs.net</a>
+      <a href="https://discord.boatlabs.net" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const allGps = await loadGrandsPrix();
+  const trackFilter = getQueryParam('track');
+
+  const tableEl = document.getElementById('gp-table');
+  const paginationEl = document.getElementById('gp-pagination');
+  const countEl = document.getElementById('result-count');
+  const clearBtn = document.getElementById('clear-filter');
+
+  const headerHtml = `
+    <div class="tr head" style="grid-template-columns: 1.4fr 1.2fr 1fr 1.3fr 0.8fr;">
+      <div>GRAND PRIX</div><div>TRACK</div><div>DATE</div><div>WINNER</div><div>TIME</div>
+    </div>`;
+
+  function renderRow(g) {
+    return `
+      <div class="tr body" style="grid-template-columns: 1.4fr 1.2fr 1fr 1.3fr 0.8fr;">
+        <div>${g.league} — S${g.season} R${g.round}</div>
+        <div>${g.track}</div>
+        <div>${formatDate(g.date)}</div>
+        <div class="driver-cell">
+          <img src="${skinUrl(g.winnerUuid, 20)}" alt="" loading="lazy">
+          <a href="driver.html?name=${slugify(g.winner)}" style="text-decoration:none;">${g.winner}</a>
+        </div>
+        <div class="mono-num">${formatTime(g.winTimeSeconds)}</div>
+      </div>`;
+  }
+
+  let items = allGps;
+  if (trackFilter) {
+    items = allGps.filter(g => g.track === trackFilter);
+    document.getElementById('page-title').textContent = `${trackFilter}`;
+    document.getElementById('page-sub').textContent = `Every grand prix run on ${trackFilter}.`;
+    clearBtn.style.display = 'inline-block';
+    clearBtn.addEventListener('click', () => { window.location.href = 'grands-prix.html'; });
+  }
+
+  createPaginator({
+    items,
+    pageSize: 15,
+    tableEl,
+    paginationEl,
+    headerHtml,
+    renderRow,
+    countEl
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="doc-title">Driver — BoatLabs GP Tracker</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="bracket">[</span>BOATLABS GP<span class="bracket">]</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="grands-prix.html">Grands Prix</a>
+      <a href="tracks.html">Tracks</a>
+      <a href="drivers.html" class="active">Drivers</a>
+      <a href="notable-completions.html">Notable Runs</a>
+    </nav>
+    <a class="nav-cta" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Join Discord</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="content">
+    <!-- filled in by JS -->
+  </div>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="footer-note">Fan-built tracker for the BoatLabs ice boat racing server. Not an official BoatLabs product. Skin icon via Crafatar, keyed by player UUID.</p>
+    <div class="footer-links">
+      <a href="https://boatlabs.net" target="_blank" rel="noopener">boatlabs.net</a>
+      <a href="https://discord.boatlabs.net" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const name = getQueryParam('name');
+  const content = document.getElementById('content');
+
+  const [drivers, gps] = await Promise.all([loadDrivers(), loadGrandsPrix()]);
+  const driver = drivers.find(d => d.name === name);
+
+  if (!driver) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <h1 style="margin-bottom: 10px;">Racer not found</h1>
+        <p>No record for "${name || ''}". <a href="drivers.html" style="color: var(--green);">Back to the driver list →</a></p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('doc-title').textContent = `${driver.name} — BoatLabs GP Tracker`;
+
+  const entries = gps
+    .filter(g => g.field.some(f => f.name === driver.name))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const bestTime = entries.length
+    ? Math.min(...entries.map(g => g.winner === driver.name ? g.winTimeSeconds : Infinity).filter(t => t !== Infinity))
+    : null;
+
+  content.innerHTML = `
+    <div class="profile-head">
+      <img src="${skinUrl(driver.uuid, 72)}" alt="${driver.name}'s Minecraft skin">
+      <div>
+        <h1>${driver.name}</h1>
+        <div class="sub">${driver.gpCount} grand${driver.gpCount === 1 ? '' : 's'} prix entered</div>
+      </div>
+    </div>
+
+    <div class="profile-stats">
+      <div class="stat-card"><div class="n">${driver.gpCount}</div><div class="l">GPs entered</div></div>
+      <div class="stat-card"><div class="n">${driver.wins}</div><div class="l">Wins</div></div>
+      <div class="stat-card"><div class="n">${bestTime !== null ? formatTime(bestTime) : '—'}</div><div class="l">Best winning time</div></div>
+    </div>
+
+    <section style="padding-top: 0;">
+      <h2 style="font-size: 17px; margin-bottom: 16px;">Race history</h2>
+      <div class="data-table">
+        <div class="tr head" style="grid-template-columns: 1.4fr 1.2fr 1fr 0.8fr;">
+          <div>GRAND PRIX</div><div>TRACK</div><div>DATE</div><div>RESULT</div>
+        </div>
+        ${entries.map(g => `
+          <div class="tr body" style="grid-template-columns: 1.4fr 1.2fr 1fr 0.8fr;">
+            <div>${g.league} — S${g.season} R${g.round}</div>
+            <div>${g.track}</div>
+            <div>${formatDate(g.date)}</div>
+            <div>${g.winner === driver.name ? `<span class="tag easy">WIN</span> <span class="mono-num">${formatTime(g.winTimeSeconds)}</span>` : '<span class="tag">Finished</span>'}</div>
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+})();
+</script>
+</body>
+</html>

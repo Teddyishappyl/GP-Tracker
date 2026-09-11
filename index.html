@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoatLabs Grand Prix Tracker</title>
+<meta name="description" content="Every BoatLabs grand prix, track and racer, tracked and archived.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="bracket">[</span>BOATLABS GP<span class="bracket">]</span></a>
+    <nav class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="grands-prix.html">Grands Prix</a>
+      <a href="tracks.html">Tracks</a>
+      <a href="drivers.html">Drivers</a>
+      <a href="notable-completions.html">Notable Runs</a>
+    </nav>
+    <a class="nav-cta" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Join Discord</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" style="padding-bottom: 0; border-bottom: none;">
+    <div class="wrap">
+      <div class="kicker">// Unofficial archive of BoatLabs ice boat racing</div>
+      <h1>We track every grand prix, so you don't have to.</h1>
+      <p class="lead">Results, standings and lap times pile up fast across BoatLabs' leagues. This is where they live after the fact — every grand prix, every track, every racer, searchable and archived in one place.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="grands-prix.html">Browse Grands Prix</a>
+        <a class="btn-secondary" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Talk racing on Discord</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="stats-row" id="home-stats">
+      <div class="stat"><div class="n">—</div><div class="l">Grands prix logged</div></div>
+      <div class="stat"><div class="n">—</div><div class="l">Tracks raced</div></div>
+      <div class="stat"><div class="n">—</div><div class="l">Racers on record</div></div>
+      <div class="stat"><div class="n">—</div><div class="l">Sub-20:00 finishes</div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2 style="font-size: 19px; margin-bottom: 20px;">What's here</h2>
+      <div class="cards-3">
+        <div class="card">
+          <div class="idx">01</div>
+          <h3>Every grand prix, ever</h3>
+          <p>Full results from every race across every league, imported and paginated so you can actually scroll through them.</p>
+        </div>
+        <div class="card">
+          <div class="idx">02</div>
+          <h3>Every track, ranked</h3>
+          <p>Every track that's hosted a grand prix, how often it's been raced, and a straight line into its race history.</p>
+        </div>
+        <div class="card">
+          <div class="idx">03</div>
+          <h3>Every racer's record</h3>
+          <p>A profile for anyone who's ever lined up on a grid — how many grands prix, how many wins, skin included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="border-top: 1px solid var(--line);">
+    <div class="wrap">
+      <div class="discord-panel">
+        <div>
+          <h2>This runs alongside the BoatLabs Discord</h2>
+          <p>Results get posted here after the fact. If you want to talk strategy, call your own races, or argue about who actually deserved that win, that conversation happens in the forum.</p>
+        </div>
+        <a class="btn-primary" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Open Discord →</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="footer-note">Fan-built tracker for the BoatLabs ice boat racing server. Not an official BoatLabs product. Data shown across this site is sample data until it's wired up to a live source.</p>
+    <div class="footer-links">
+      <a href="https://boatlabs.net" target="_blank" rel="noopener">boatlabs.net</a>
+      <a href="https://discord.boatlabs.net" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const [gps, tracks, drivers] = await Promise.all([loadGrandsPrix(), loadTracks(), loadDrivers()]);
+  const notable = gps.filter(g => g.winTimeSeconds < 1200).length;
+  const statsEl = document.getElementById('home-stats');
+  const values = [gps.length, tracks.length, drivers.length, notable];
+  statsEl.querySelectorAll('.n').forEach((el, i) => { el.textContent = values[i]; });
+})();
+</script>
+</body>
+</html>

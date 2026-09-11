@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drivers — BoatLabs GP Tracker</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <a href="index.html" class="brand"><span class="bracket">[</span>BOATLABS GP<span class="bracket">]</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="grands-prix.html">Grands Prix</a>
+      <a href="tracks.html">Tracks</a>
+      <a href="drivers.html" class="active">Drivers</a>
+      <a href="notable-completions.html">Notable Runs</a>
+    </nav>
+    <a class="nav-cta" href="https://discord.boatlabs.net" target="_blank" rel="noopener">Join Discord</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <div class="page-eyebrow">// Racer index</div>
+      <h1>Everyone who's raced a GP</h1>
+      <p>Every racer who's lined up on a BoatLabs grand prix grid, sorted by how many they've entered. Click a name for their full record.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="controls">
+        <span class="result-count" id="result-count"></span>
+      </div>
+
+      <div class="data-table" id="driver-table"></div>
+      <div class="pagination" id="driver-pagination"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="footer-note">Fan-built tracker for the BoatLabs ice boat racing server. Not an official BoatLabs product. Skin icons via Crafatar, keyed by player UUID. Data shown is sample data until wired up to a live source.</p>
+    <div class="footer-links">
+      <a href="https://boatlabs.net" target="_blank" rel="noopener">boatlabs.net</a>
+      <a href="https://discord.boatlabs.net" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const allDrivers = await loadDrivers(); // already sorted by gpCount desc in the data layer
+
+  const tableEl = document.getElementById('driver-table');
+  const paginationEl = document.getElementById('driver-pagination');
+  const countEl = document.getElementById('result-count');
+
+  const headerHtml = `
+    <div class="tr head" style="grid-template-columns: 40px 1.6fr 1fr 1fr;">
+      <div>#</div><div>RACER</div><div>GPS ENTERED</div><div>WINS</div>
+    </div>`;
+
+  // Precompute each driver's overall rank once, since the list order is fixed
+  // (sorted by GP count in the data layer) — used for the "#" column.
+  allDrivers.forEach((d, i) => { d._rank = i; });
+
+  function renderRowFinal(d) {
+    return `
+      <a class="tr body link" href="driver.html?name=${slugify(d.name)}"
+         style="grid-template-columns: 40px 1.6fr 1fr 1fr;">
+        <div style="color:var(--muted);">${d._rank + 1}</div>
+        <div class="driver-cell">
+          <img src="${skinUrl(d.uuid, 20)}" alt="" loading="lazy">
+          <span>${d.name}</span>
+        </div>
+        <div class="mono-num">${d.gpCount}</div>
+        <div>${d.wins}</div>
+      </a>`;
+  }
+
+  createPaginator({
+    items: allDrivers,
+    pageSize: 50,
+    tableEl,
+    paginationEl,
+    headerHtml,
+    renderRow: renderRowFinal,
+    countEl
+  });
+})();
+</script>
+</body>
+</html>
